@@ -113,6 +113,11 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     }
   }
 
+  /** Cancels the fingerprint authentication. */
+  void stopAuthentication() {
+    stop(false);
+  }
+
   private void start() {
     activity.getApplication().registerActivityLifecycleCallbacks(this);
     resume();

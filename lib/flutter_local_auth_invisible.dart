@@ -97,6 +97,18 @@ class LocalAuthentication {
       (await _channel.invokeListMethod<String>('getAvailableBiometrics'))
           .isNotEmpty;
 
+  /// Returns true if auth was cancelled successfully.
+  /// This api only works for Android.
+  /// Returns false if there was some error or no auth in progress.
+  ///
+  /// Returns [Future] bool true or false:
+  Future<bool> stopAuthentication() {
+    if (_platform.isAndroid) {
+      return _channel.invokeMethod<bool>('stopAuthentication');
+    }
+    return Future<bool>.sync(() => true);
+  }
+
   /// Returns a list of enrolled biometrics
   ///
   /// Returns a [Future] List<BiometricType> with the following possibilities:

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class LocalAuthPlugin implements MethodCallHandler {
   private final Registrar registrar;
   private final AtomicBoolean authInProgress = new AtomicBoolean(false);
+  private AuthenticationHelper authenticationHelper;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -47,7 +48,7 @@ public class LocalAuthPlugin implements MethodCallHandler {
         result.error("no_activity", "local_auth plugin requires a foreground activity", null);
         return;
       }
-      AuthenticationHelper authenticationHelper =
+      authenticationHelper =
           new AuthenticationHelper(
               activity,
               call,
@@ -91,8 +92,27 @@ public class LocalAuthPlugin implements MethodCallHandler {
         result.error("no_biometrics_available", e.getMessage(), null);
       }
 
+    } else if (call.method.equals(("stopAuthentication"))) {
+      stopAuthentication(result);
     } else {
       result.notImplemented();
+    }
+  }
+
+  /*
+   Stops the authentication if in progress.
+  */
+  private void stopAuthentication(Result result) {
+    try {
+      if (authenticationHelper != null && authInProgress.get()) {
+        authenticationHelper.stopAuthentication();
+        authenticationHelper = null;
+        result.success(true);
+        return;
+      }
+      result.success(false);
+    } catch (Exception e) {
+      result.success(false);
     }
   }
 }
