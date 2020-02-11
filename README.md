@@ -1,17 +1,21 @@
-# local_auth
+# flutter_local_auth_invisible
 
-This Flutter plugin provides means to perform local, on-device authentication of
+This Flutter plugin is a fork of the official [local_auth](https://pub.dev/packages/local_auth)
+plugin and provides means to perform local, on-device authentication of
 the user.
 
 This means referring to biometric authentication on iOS (Touch ID or lock code)
 and the fingerprint APIs on Android (introduced in Android 6.0).
+
+On Android this plugin suppresses the standard system-wide fingerprint authentication dialog,
+so you are free to implement your own UI.
 
 ## Usage in Dart
 
 Import the relevant file:
 
 ```dart
-import 'package:local_auth/local_auth.dart';
+import 'package:flutter_local_auth_invisible/flutter_local_auth_invisible.dart';
 ```
 
 To check whether there is local authentication available on this device or not, call canCheckBiometrics:
@@ -153,10 +157,3 @@ if the user receives a phone call before they get a chance to authenticate. With
 `stickyAuth` set to false, this would result in plugin returning failure result
 to the Dart app. If set to true, the plugin will retry authenticating when the
 app resumes.
-
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](http://flutter.io/).
-
-For help on editing plugin code, view the [documentation](https://flutter.io/platform-plugins/#edit-code).

@@ -1,3 +1,7 @@
+## 0.4.1+1
+
+* Updated README
+
 ## 0.4.1
 
 * Added `stopAuthentication` method for Android platform
