@@ -1,3 +1,7 @@
+## 0.4.1+2
+
+* Fix building for iOS
+
 ## 0.4.1+1
 
 * Updated README

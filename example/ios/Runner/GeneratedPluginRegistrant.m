@@ -4,8 +4,8 @@
 
 #import "GeneratedPluginRegistrant.h"
 
-#if __has_include(<flutter_local_auth_invisible/LocalAuthPlugin.h>)
-#import <flutter_local_auth_invisible/LocalAuthPlugin.h>
+#if __has_include(<flutter_local_auth_invisible/FLTLocalAuthPlugin.h>)
+#import <flutter_local_auth_invisible/FLTLocalAuthPlugin.h>
 #else
 @import flutter_local_auth_invisible;
 #endif
@@ -13,7 +13,7 @@
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
-  [LocalAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"LocalAuthPlugin"]];
+  [FLTLocalAuthPlugin registerWithRegistrar:[registry registrarForPlugin:@"FLTLocalAuthPlugin"]];
 }
 
 @end
