@@ -48,6 +48,10 @@ class LocalAuthentication {
   /// back to Dart and it is up to the client app to restart authentication or
   /// do something else.
   ///
+  /// [showFPDialog] is used to show fingerprint dialog. If showFPDialog is set
+  /// to true, authentication dialog is shown. If it is set to
+  /// false (default), then authentication dialog is not shown
+  ///
   /// Construct [AndroidAuthStrings] and [IOSAuthStrings] if you want to
   /// customize messages in the dialogs.
   ///
@@ -64,6 +68,7 @@ class LocalAuthentication {
     @required String localizedReason,
     bool useErrorDialogs = true,
     bool stickyAuth = false,
+    bool showFPDialog = false,
     AndroidAuthMessages androidAuthStrings = const AndroidAuthMessages(),
     IOSAuthMessages iOSAuthStrings = const IOSAuthMessages(),
     bool sensitiveTransaction = true,
@@ -73,6 +78,7 @@ class LocalAuthentication {
       'localizedReason': localizedReason,
       'useErrorDialogs': useErrorDialogs,
       'stickyAuth': stickyAuth,
+      'showFPDialog': showFPDialog,
       'sensitiveTransaction': sensitiveTransaction,
     };
     if (_platform.isIOS) {
