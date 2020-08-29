@@ -2,7 +2,7 @@ name: flutter_local_auth_invisible
 description: Flutter plugin for Android and iOS device authentication sensors
   such as Fingerprint Reader and Touch ID with no visible dialog on Android.
 homepage: https://github.com/priezz/flutter_local_auth_invisible
-version: 0.4.1+2
+version: 1.0.0
 
 flutter:
   plugin:

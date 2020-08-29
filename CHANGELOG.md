@@ -1,6 +1,6 @@
-## 0.4.1+2
+## 1.0.0
 
-* Fix building for iOS
+* Merge the upstream iOS code (0.6.3)
 
 ## 0.4.1+1
 
