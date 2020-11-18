@@ -1,3 +1,7 @@
+## 1.1.0
+
+* Support Flutter 1.22.4+
+
 ## 1.0.0
 
 * Merge the upstream iOS code (0.6.3)
