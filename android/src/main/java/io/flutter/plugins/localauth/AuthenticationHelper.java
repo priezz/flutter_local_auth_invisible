@@ -204,7 +204,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   }
 
   private void updateFingerprintDialog(DialogState state, String message) {
-    if (cancellationSignal.isCanceled() || !fingerprintDialog.isShowing()) {
+    if (cancellationSignal.isCanceled() || (fingerprintDialog != null && !fingerprintDialog.isShowing())) {
       return;
     }
     // TextView resultInfo = (TextView) fingerprintDialog.findViewById(R.id.fingerprint_status);
@@ -225,13 +225,13 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   // Suppress inflateParams lint because dialogs do not need to attach to a parent view.
   @SuppressLint("InflateParams")
   private void showFingerprintDialog() {
-    // View view = LayoutInflater.from(activity).inflate(R.layout.scan_fp, null, false);
-    // TextView fpDescription = (TextView) view.findViewById(R.id.fingerprint_description);
-    // TextView title = (TextView) view.findViewById(R.id.fingerprint_signin);
-    // TextView status = (TextView) view.findViewById(R.id.fingerprint_status);
-    // fpDescription.setText((String) call.argument("localizedReason"));
-    // title.setText((String) call.argument("signInTitle"));
-    // status.setText((String) call.argument("fingerprintHint"));
+    View view = LayoutInflater.from(activity).inflate(R.layout.scan_fp, null, false);
+    TextView fpDescription = (TextView) view.findViewById(R.id.fingerprint_description);
+    TextView title = (TextView) view.findViewById(R.id.fingerprint_signin);
+    TextView status = (TextView) view.findViewById(R.id.fingerprint_status);
+    fpDescription.setText((String) call.argument("localizedReason"));
+    title.setText((String) call.argument("signInTitle"));
+    status.setText((String) call.argument("fingerprintHint"));
     Context context = new ContextThemeWrapper(activity, R.style.AlertDialogCustom);
     OnClickListener cancelHandler =
         new OnClickListener() {
@@ -240,13 +240,13 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
             stop(false);
           }
         };
-    fingerprintDialog =
-        new AlertDialog.Builder(context)
-            // .setView(view)
-            // .setNegativeButton((String) call.argument(CANCEL_BUTTON), cancelHandler)
-            // .setCancelable(false)
-            .show();
-    fingerprintDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND‌​);
+	if (call.argument("showFPDialog"))
+		fingerprintDialog =
+			new AlertDialog.Builder(context)
+				.setView(view)
+				.setNegativeButton((String) call.argument(CANCEL_BUTTON), cancelHandler)
+				.setCancelable(false).show();
+    //fingerprintDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
   }
 
   // Suppress inflateParams lint because dialogs do not need to attach to a parent view.
