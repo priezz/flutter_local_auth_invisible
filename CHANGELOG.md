@@ -1,3 +1,7 @@
+## 2.0.0
+Migrated to null-safety 
+Fixed a bug which caused the next error: 
+"Attempted to finish an input event but the input event receiver has already been disposed."
 ## 1.1.0
 
 * Support Flutter 1.22.4+

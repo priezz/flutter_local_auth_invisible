@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,7 +81,6 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
    * The prominent UI element during this transaction. It is used to communicate the state of
    * authentication to the user.
    */
-  private AlertDialog fingerprintDialog;
 
   private CancellationSignal cancellationSignal;
 
@@ -94,7 +94,9 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   }
 
   void authenticate() {
+    Log.d("AuthenticationHelper", "Start authentication");
     if (fingerprintManager.isHardwareDetected()) {
+
       if (keyguardManager.isKeyguardSecure() && fingerprintManager.hasEnrolledFingerprints()) {
         start();
       } else {
@@ -123,18 +125,18 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     resume();
   }
 
+  private void print(Object value) {
+    Log.d("AuthenticationHelper", value.toString());
+  }
+
   private void resume() {
     cancellationSignal = new CancellationSignal();
-    showFingerprintDialog();
     fingerprintManager.authenticate(null, 0, cancellationSignal, this, null);
   }
 
   private void pause() {
     if (cancellationSignal != null) {
       cancellationSignal.cancel();
-    }
-    if (fingerprintDialog != null && fingerprintDialog.isShowing()) {
-      fingerprintDialog.dismiss();
     }
   }
 
@@ -144,6 +146,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
    * @param success If the authentication was successful.
    */
   private void stop(boolean success) {
+    print("LOCAL AUTH STOPPED WITH A FLAG OF " + success);
     pause();
     activity.getApplication().unregisterActivityLifecycleCallbacks(this);
     if (success) {
@@ -175,23 +178,22 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
 
   @Override
   public void onAuthenticationError(int errMsgId, CharSequence errString) {
-    updateFingerprintDialog(DialogState.FAILURE, errString.toString());
+    stopAuthentication();
   }
 
   @Override
   public void onAuthenticationHelp(int helpMsgId, CharSequence helpString) {
-    updateFingerprintDialog(DialogState.FAILURE, helpString.toString());
+
   }
 
   @Override
   public void onAuthenticationFailed() {
-    updateFingerprintDialog(
-        DialogState.FAILURE, (String) call.argument("fingerprintNotRecognized"));
+    stopAuthentication();
   }
 
   @Override
   public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult result) {
-    updateFingerprintDialog(DialogState.SUCCESS, (String) call.argument("fingerprintSuccess"));
+    stop(true);
     new Handler(Looper.myLooper())
         .postDelayed(
             new Runnable() {
@@ -201,52 +203,6 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
               }
             },
             DISMISS_AFTER_MS);
-  }
-
-  private void updateFingerprintDialog(DialogState state, String message) {
-    if (cancellationSignal.isCanceled() || !fingerprintDialog.isShowing()) {
-      return;
-    }
-    // TextView resultInfo = (TextView) fingerprintDialog.findViewById(R.id.fingerprint_status);
-    // ImageView icon = (ImageView) fingerprintDialog.findViewById(R.id.fingerprint_icon);
-    // switch (state) {
-    //   case FAILURE:
-    //     icon.setImageResource(R.drawable.fingerprint_warning_icon);
-    //     resultInfo.setTextColor(ContextCompat.getColor(activity, R.color.warning_color));
-    //     break;
-    //   case SUCCESS:
-    //     icon.setImageResource(R.drawable.fingerprint_success_icon);
-    //     resultInfo.setTextColor(ContextCompat.getColor(activity, R.color.success_color));
-    //     break;
-    // }
-    // resultInfo.setText(message);
-  }
-
-  // Suppress inflateParams lint because dialogs do not need to attach to a parent view.
-  @SuppressLint("InflateParams")
-  private void showFingerprintDialog() {
-    // View view = LayoutInflater.from(activity).inflate(R.layout.scan_fp, null, false);
-    // TextView fpDescription = (TextView) view.findViewById(R.id.fingerprint_description);
-    // TextView title = (TextView) view.findViewById(R.id.fingerprint_signin);
-    // TextView status = (TextView) view.findViewById(R.id.fingerprint_status);
-    // fpDescription.setText((String) call.argument("localizedReason"));
-    // title.setText((String) call.argument("signInTitle"));
-    // status.setText((String) call.argument("fingerprintHint"));
-    Context context = new ContextThemeWrapper(activity, R.style.AlertDialogCustom);
-    OnClickListener cancelHandler =
-        new OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            stop(false);
-          }
-        };
-    fingerprintDialog =
-        new AlertDialog.Builder(context)
-            // .setView(view)
-            // .setNegativeButton((String) call.argument(CANCEL_BUTTON), cancelHandler)
-            // .setCancelable(false)
-            .show();
-    fingerprintDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND‌​);
   }
 
   // Suppress inflateParams lint because dialogs do not need to attach to a parent view.
@@ -296,5 +252,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {}
 
   @Override
-  public void onActivityDestroyed(Activity activity) {}
+  public void onActivityDestroyed(Activity activity) {
+
+  }
 }

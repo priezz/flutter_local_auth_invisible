@@ -5,6 +5,10 @@
 package io.flutter.plugins.localauth;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -20,6 +24,8 @@ public class LocalAuthPlugin implements MethodCallHandler {
   private final Registrar registrar;
   private final AtomicBoolean authInProgress = new AtomicBoolean(false);
   private AuthenticationHelper authenticationHelper;
+  private final Handler handler = new Handler(Looper.getMainLooper());
+  private Runnable delayRunnable;
 
   /** Plugin registration. */
   public static void registerWith(Registrar registrar) {
@@ -32,17 +38,39 @@ public class LocalAuthPlugin implements MethodCallHandler {
     this.registrar = registrar;
   }
 
+  private void print(Object value) {
+    Log.d("LocalAuthPlugin", value.toString());
+  }
+
+  void stopIfNotStopped(Result result) {
+    if (authInProgress.compareAndSet(true, false)) {
+      print("LOCAL AUTH STOPPED");
+      result.success(false);
+    }
+  }
+
   @Override
   public void onMethodCall(MethodCall call, final Result result) {
     if (call.method.equals("authenticateWithBiometrics")) {
       if (!authInProgress.compareAndSet(false, true)) {
-        // Apps should not invoke another authentication request while one is in progress,
-        // so we classify this as an error condition. If we ever find a legitimate use case for
-        // this, we can try to cancel the ongoing auth and start a new one but for now, not worth
-        // the complexity.
-        result.error("auth_in_progress", "Authentication in progress", null);
-        return;
+        stopCurrentAuthentication();
       }
+      int maxTimeoutMillis = call.argument("maxTimeoutMillis");
+      
+      if (delayRunnable != null) {
+        handler.removeCallbacks(delayRunnable);
+        delayRunnable = null;
+      }
+
+      delayRunnable = new Runnable() {
+        @Override
+        public void run() {
+          stopIfNotStopped(result);
+        }
+      };
+
+      handler.postDelayed(delayRunnable, maxTimeoutMillis);
+
       Activity activity = registrar.activity();
       if (activity == null || activity.isFinishing()) {
         result.error("no_activity", "local_auth plugin requires a foreground activity", null);
@@ -93,9 +121,17 @@ public class LocalAuthPlugin implements MethodCallHandler {
       }
 
     } else if (call.method.equals(("stopAuthentication"))) {
+
       stopAuthentication(result);
     } else {
       result.notImplemented();
+    }
+  }
+
+  private void stopCurrentAuthentication() {
+    if (authenticationHelper != null && authInProgress.get()) {
+      authenticationHelper.stopAuthentication();
+      authenticationHelper = null;
     }
   }
 
@@ -103,10 +139,10 @@ public class LocalAuthPlugin implements MethodCallHandler {
    Stops the authentication if in progress.
   */
   private void stopAuthentication(Result result) {
+    print("Stop authentication called");
     try {
       if (authenticationHelper != null && authInProgress.get()) {
-        authenticationHelper.stopAuthentication();
-        authenticationHelper = null;
+        stopCurrentAuthentication();
         result.success(true);
         return;
       }

@@ -60,6 +60,12 @@ class LocalAuthentication {
   /// authentication (e.g. lack of relevant hardware). This might throw
   /// [PlatformException] with error code [otherOperatingSystem] on the iOS
   /// simulator.
+  /// [maxTimeoutMillis] max milliseconds the authenticator will wait
+  /// is the timeout is elapsed without any user actions, the authenticator
+  /// will be canceled with failure
+  /// minimum value is 3000 milliseconds, maximum is 30000
+  /// the default value is 7000 which means local auth will be canceled 
+  /// after 7 seconds of inactivity
   Future<bool> authenticateWithBiometrics({
     required String localizedReason,
     bool useErrorDialogs = true,
@@ -67,10 +73,10 @@ class LocalAuthentication {
     AndroidAuthMessages androidAuthStrings = const AndroidAuthMessages(),
     IOSAuthMessages iOSAuthStrings = const IOSAuthMessages(),
     bool sensitiveTransaction = true,
+    int maxTimeoutMillis = 7000,
   }) async {
     final Map<String, Object> args = <String, Object>{
       'localizedReason': localizedReason,
-      'useErrorDialogs': useErrorDialogs,
       'stickyAuth': stickyAuth,
       'sensitiveTransaction': sensitiveTransaction,
     };
@@ -85,6 +91,10 @@ class LocalAuthentication {
               'operating systems.',
           details: 'Your operating system is ${_platform.operatingSystem}');
     }
+    maxTimeoutMillis = maxTimeoutMillis.clamp(3000, 30000);
+    args.addAll({
+      'maxTimeoutMillis': maxTimeoutMillis,
+    });
     return await _channel.invokeMethod<bool?>('authenticateWithBiometrics', args) ?? false;
   }
 
