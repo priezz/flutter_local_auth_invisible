@@ -25,3 +25,4 @@ doc/api/
 .fvm/flutter_sdk
 .gitignore
 .fvm/fvm_config.json
+android/local.properties
