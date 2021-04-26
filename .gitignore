@@ -22,3 +22,6 @@ doc/api/
 
 .history/
 .vscode/
+.fvm/flutter_sdk
+.gitignore
+.fvm/fvm_config.json
