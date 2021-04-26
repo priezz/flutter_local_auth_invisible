@@ -21,10 +21,8 @@ import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
-import androidx.core.content.ContextCompat;
+
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.core.os.CancellationSignal;
 import io.flutter.plugin.common.MethodCall;
@@ -125,7 +123,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     resume();
   }
 
-  private void print(Object value) {
+  private void logDebug(Object value) {
     Log.d("AuthenticationHelper", value.toString());
   }
 
@@ -146,7 +144,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
    * @param success If the authentication was successful.
    */
   private void stop(boolean success) {
-    print("LOCAL AUTH STOPPED WITH A FLAG OF " + success);
+    logDebug("LOCAL AUTH STOPPED WITH A FLAG OF " + success);
     pause();
     activity.getApplication().unregisterActivityLifecycleCallbacks(this);
     if (success) {

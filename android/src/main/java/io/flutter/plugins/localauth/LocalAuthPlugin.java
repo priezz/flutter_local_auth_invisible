@@ -38,13 +38,13 @@ public class LocalAuthPlugin implements MethodCallHandler {
     this.registrar = registrar;
   }
 
-  private void print(Object value) {
+  private void logDebug(Object value) {
     Log.d("LocalAuthPlugin", value.toString());
   }
 
   void stopIfNotStopped(Result result) {
     if (authInProgress.compareAndSet(true, false)) {
-      print("LOCAL AUTH STOPPED");
+      logDebug("LOCAL AUTH STOPPED");
       result.success(false);
     }
   }
@@ -139,7 +139,7 @@ public class LocalAuthPlugin implements MethodCallHandler {
    Stops the authentication if in progress.
   */
   private void stopAuthentication(Result result) {
-    print("Stop authentication called");
+    logDebug("Stop authentication called");
     try {
       if (authenticationHelper != null && authInProgress.get()) {
         stopCurrentAuthentication();
