@@ -60,18 +60,23 @@ class LocalAuthentication {
   /// authentication (e.g. lack of relevant hardware). This might throw
   /// [PlatformException] with error code [otherOperatingSystem] on the iOS
   /// simulator.
+  /// [maxTimeoutMillis] max milliseconds the authenticator will wait
+  /// is the timeout is elapsed without any user actions, the authenticator
+  /// will be canceled with failure
+  /// minimum value is 3000 milliseconds, maximum is 30000
+  /// the default value is 7000 which means local auth will be canceled 
+  /// after 7 seconds of inactivity
   Future<bool> authenticateWithBiometrics({
-    @required String localizedReason,
+    required String localizedReason,
     bool useErrorDialogs = true,
     bool stickyAuth = false,
     AndroidAuthMessages androidAuthStrings = const AndroidAuthMessages(),
     IOSAuthMessages iOSAuthStrings = const IOSAuthMessages(),
     bool sensitiveTransaction = true,
+    int maxTimeoutMillis = 7000,
   }) async {
-    assert(localizedReason != null);
     final Map<String, Object> args = <String, Object>{
       'localizedReason': localizedReason,
-      'useErrorDialogs': useErrorDialogs,
       'stickyAuth': stickyAuth,
       'sensitiveTransaction': sensitiveTransaction,
     };
@@ -86,25 +91,27 @@ class LocalAuthentication {
               'operating systems.',
           details: 'Your operating system is ${_platform.operatingSystem}');
     }
-    return await _channel.invokeMethod<bool>(
-        'authenticateWithBiometrics', args);
+    maxTimeoutMillis = maxTimeoutMillis.clamp(3000, 30000);
+    args.addAll({
+      'maxTimeoutMillis': maxTimeoutMillis,
+    });
+    return await _channel.invokeMethod<bool?>('authenticateWithBiometrics', args) ?? false;
   }
 
   /// Returns true if device is capable of checking biometrics
   ///
   /// Returns a [Future] bool true or false:
   Future<bool> get canCheckBiometrics async =>
-      (await _channel.invokeListMethod<String>('getAvailableBiometrics'))
-          .isNotEmpty;
+      (await _channel.invokeListMethod<String?>('getAvailableBiometrics'))?.isNotEmpty == true;
 
   /// Returns true if auth was cancelled successfully.
   /// This api only works for Android.
   /// Returns false if there was some error or no auth in progress.
   ///
   /// Returns [Future] bool true or false:
-  Future<bool> stopAuthentication() {
+  Future<bool> stopAuthentication() async {
     if (_platform.isAndroid) {
-      return _channel.invokeMethod<bool>('stopAuthentication');
+      return await _channel.invokeMethod<bool>('stopAuthentication') ?? false;
     }
     return Future<bool>.sync(() => true);
   }
@@ -116,10 +123,11 @@ class LocalAuthentication {
   /// - BiometricType.fingerprint
   /// - BiometricType.iris (not yet implemented)
   Future<List<BiometricType>> getAvailableBiometrics() async {
-    final List<String> result =
-        (await _channel.invokeListMethod<String>('getAvailableBiometrics'));
+    final List<String>? result = (await _channel.invokeListMethod<String>(
+      'getAvailableBiometrics',
+    ));
     final List<BiometricType> biometrics = <BiometricType>[];
-    result.forEach((String value) {
+    result?.forEach((String value) {
       switch (value) {
         case 'face':
           biometrics.add(BiometricType.face);
