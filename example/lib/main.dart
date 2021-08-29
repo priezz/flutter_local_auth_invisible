@@ -37,6 +37,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _getAvailableBiometrics() async {
+    if (!_canCheckBiometrics) return;
+    
     List<BiometricType> availableBiometrics = <BiometricType>[];
     try {
       availableBiometrics = await auth.getAvailableBiometrics();
@@ -51,6 +53,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _authenticate() async {
+    if (!_canCheckBiometrics || _availableBiometrics.isEmpty) return;
+
     bool authenticated = false;
     try {
       authenticated = await auth.authenticateWithBiometrics(
@@ -86,18 +90,22 @@ class _MyAppState extends State<MyApp> {
                 child: const Text('Check biometrics'),
                 onPressed: _checkBiometrics,
               ),
-              Text('Available biometrics: $_availableBiometrics\n'),
-              // ignore: deprecated_member_use
-              RaisedButton(
-                child: const Text('Get available biometrics'),
-                onPressed: _getAvailableBiometrics,
-              ),
+              if (_canCheckBiometrics) ...[
+                Text('Available biometrics: $_availableBiometrics\n'),
+                // ignore: deprecated_member_use
+                RaisedButton(
+                  child: const Text('Get available biometrics'),
+                  onPressed: _getAvailableBiometrics,
+                ),
+              ],
               Text('Current State: $_authorized\n'),
-              // ignore: deprecated_member_use
-              RaisedButton(
-                child: const Text('Authenticate'),
-                onPressed: _authenticate,
-              )
+              if (_canCheckBiometrics && _availableBiometrics.isNotEmpty) ...[
+                // ignore: deprecated_member_use
+                RaisedButton(
+                  child: const Text('Authenticate'),
+                  onPressed: _authenticate,
+                )
+              ],
             ],
           ),
         ),
