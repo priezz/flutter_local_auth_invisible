@@ -1,6 +1,3 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -17,60 +14,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final LocalAuthentication auth = LocalAuthentication();
-  bool _canCheckBiometrics = false;
-  List<BiometricType>? _availableBiometrics;
   String _authorized = 'Not Authorized';
-
-  Future<void> _checkBiometrics() async {
-    bool canCheckBiometrics = false;
-    try {
-      canCheckBiometrics = await auth.canCheckBiometrics;
-    } on PlatformException catch (e) {
-      print(e);
-    }
-    if (!mounted) return;
-
-    setState(() {
-      _canCheckBiometrics = canCheckBiometrics;
-    });
-  }
-
-  Future<void> _getAvailableBiometrics() async {
-    if (!_canCheckBiometrics) return;
-    
-    List<BiometricType> availableBiometrics = <BiometricType>[];
-    try {
-      availableBiometrics = await auth.getAvailableBiometrics();
-    } on PlatformException catch (e) {
-      print(e);
-    }
-    if (!mounted) return;
-
-    setState(() {
-      _availableBiometrics = availableBiometrics;
-    });
-  }
-
-  Future<void> _authenticate() async {
-    if (!_canCheckBiometrics || _availableBiometrics.isEmpty) return;
-
-    bool authenticated = false;
-    try {
-      authenticated = await auth.authenticateWithBiometrics(
-        localizedReason: 'Scan your fingerprint to authenticate',
-        useErrorDialogs: true,
-        stickyAuth: false,
-      );
-    } on PlatformException catch (e) {
-      print(e);
-    }
-    if (!mounted) return;
-
-    setState(() {
-      _authorized = authenticated ? 'Authorized' : 'Not Authorized';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,37 +23,120 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: ConstrainedBox(
-          constraints: const BoxConstraints.expand(),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              Text('Can check biometrics: $_canCheckBiometrics\n'),
-              // ignore: deprecated_member_use
-              RaisedButton(
-                child: const Text('Check biometrics'),
-                onPressed: _checkBiometrics,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(
+              'Can ${AuthProviderState.biometricsEnabled ? '' : 'not '}'
+              'auth with biometrics',
+            ),
+            Text('Current State: $_authorized\n'),
+            AuthProvider(
+              'hash',
+              onSuccess: () => setState(
+                () => _authorized = 'Authorized',
               ),
-              if (_canCheckBiometrics) ...[
-                Text('Available biometrics: $_availableBiometrics\n'),
-                // ignore: deprecated_member_use
-                RaisedButton(
-                  child: const Text('Get available biometrics'),
-                  onPressed: _getAvailableBiometrics,
-                ),
-              ],
-              Text('Current State: $_authorized\n'),
-              if (_canCheckBiometrics && _availableBiometrics.isNotEmpty) ...[
-                // ignore: deprecated_member_use
-                RaisedButton(
-                  child: const Text('Authenticate'),
-                  onPressed: _authenticate,
-                )
-              ],
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+  }
+}
+
+class AuthProvider extends StatefulWidget {
+  const AuthProvider(
+    this.pinHash, {
+    this.onFinishChecking,
+    this.onStartChecking,
+    this.onSuccess,
+  });
+  final Function()? onFinishChecking;
+  final Function()? onStartChecking;
+  final Function()? onSuccess;
+  final String pinHash;
+
+  @override
+  AuthProviderState createState() => AuthProviderState();
+}
+
+class AuthProviderState extends State<AuthProvider> {
+  static bool biometricsEnabled = false;
+  bool _biometricsSelected = true;
+  List<BiometricType> _biometricSensors = [];
+  // ignore: unused_field
+  String? _biometricsIcon;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) => _init());
+  }
+
+  Future<void> _init() async {
+    _biometricSensors = await LocalAuthentication.getAvailableBiometrics();
+    biometricsEnabled = (await LocalAuthentication.canCheckBiometrics) &&
+        _biometricSensors.isNotEmpty;
+    _biometricsIcon = _biometricSensors.contains(BiometricType.face)
+        ? 'ui.faceId'
+        : 'ui.fingerprint';
+    setState(() {});
+    await _launchScannerSchedule();
+  }
+
+  @override
+  void didUpdateWidget(oldWidget) {
+    _launchScannerSchedule();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
+  Widget build(BuildContext context) => Column(
+        children: [
+          biometricsEnabled && _biometricsSelected
+              ? Text('BiometricsView()')
+              : Text('PinPadView()'),
+          TextButton(
+            onPressed: _toggleView,
+            child: Text('Toggle auth method'),
+          ),
+        ],
+      );
+
+  Future<void> _launchScannerSchedule() async {
+    if (!biometricsEnabled) return;
+
+    await LocalAuthentication.stopAuthentication();
+    await Future.delayed(const Duration(milliseconds: 300), _launchScanner);
+  }
+
+  Future<void> _launchScanner() async {
+    try {
+      while (_biometricsSelected) {
+        final didAuthenticate = await LocalAuthentication.authenticate(
+          localizedReason:
+              'Please pass the biometrical authentication to continue.',
+          stickyAuth: false,
+          useErrorDialogs: true,
+        );
+        if (didAuthenticate) {
+          widget.onSuccess?.call();
+          break;
+        } else {
+          await Future.delayed(const Duration(milliseconds: 500));
+        }
+      }
+    } on PlatformException catch (_) {
+      // Report the issue
+    }
+  }
+
+  void _toggleView() {
+    setState(() => _biometricsSelected = !_biometricsSelected);
+    if (_biometricsSelected) {
+      _launchScanner();
+    } else {
+      LocalAuthentication.stopAuthentication();
+    }
   }
 }

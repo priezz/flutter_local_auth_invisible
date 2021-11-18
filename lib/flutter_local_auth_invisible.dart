@@ -30,10 +30,12 @@ void setMockPathProviderPlatform(Platform platform) {
 
 /// A Flutter plugin for authenticating the user identity locally.
 class LocalAuthentication {
+  const LocalAuthentication();
+
   /// The `authenticateWithBiometrics` method has been deprecated.
   /// Use `authenticate` with `biometricOnly: true` instead
   @Deprecated("Use `authenticate` with `biometricOnly: true` instead")
-  Future<bool> authenticateWithBiometrics({
+  static Future<bool> authenticateWithBiometrics({
     required String localizedReason,
     bool useErrorDialogs = true,
     bool stickyAuth = false,
@@ -92,7 +94,7 @@ class LocalAuthentication {
   /// authentication (e.g. lack of relevant hardware). This might throw
   /// [PlatformException] with error code [otherOperatingSystem] on the iOS
   /// simulator.
-  Future<bool> authenticate({
+  static Future<bool> authenticate({
     required String localizedReason,
     AndroidAuthMessages androidAuthStrings = const AndroidAuthMessages(),
     bool biometricOnly = true,
@@ -131,7 +133,7 @@ class LocalAuthentication {
   /// Returns false if there was some error or no auth in progress.
   ///
   /// Returns [Future] bool true or false:
-  Future<bool> stopAuthentication() async {
+  static Future<bool> stopAuthentication() async {
     if (_platform.isAndroid) {
       return await _channel.invokeMethod<bool>('stopAuthentication') ?? false;
     }
@@ -141,7 +143,7 @@ class LocalAuthentication {
   /// Returns true if device is capable of checking biometrics
   ///
   /// Returns a [Future] bool true or false:
-  Future<bool> get canCheckBiometrics async =>
+  static Future<bool> get canCheckBiometrics async =>
       (await _channel.invokeListMethod<String>('getAvailableBiometrics'))!
           .isNotEmpty;
 
@@ -149,7 +151,7 @@ class LocalAuthentication {
   /// fail over to device credentials.
   ///
   /// Returns a [Future] bool true or false:
-  Future<bool> isDeviceSupported() async =>
+  static Future<bool> isDeviceSupported() async =>
       (await _channel.invokeMethod<bool>('isDeviceSupported')) ?? false;
 
   /// Returns a list of enrolled biometrics
@@ -158,7 +160,7 @@ class LocalAuthentication {
   /// - BiometricType.face
   /// - BiometricType.fingerprint
   /// - BiometricType.iris (not yet implemented)
-  Future<List<BiometricType>> getAvailableBiometrics() async {
+  static Future<List<BiometricType>> getAvailableBiometrics() async {
     final List<String> result = (await _channel.invokeListMethod<String>(
           'getAvailableBiometrics',
         )) ??

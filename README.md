@@ -21,8 +21,7 @@ import 'package:flutter_local_auth_invisible/flutter_local_auth_invisible.dart';
 To check whether there is local authentication available on this device or not, call canCheckBiometrics:
 
 ```dart
-bool canCheckBiometrics =
-    await localAuth.canCheckBiometrics;
+bool canCheckBiometrics = await LocalAuthentication.canCheckBiometrics;
 ```
 
 Currently the following biometric types are implemented:
@@ -33,15 +32,11 @@ Currently the following biometric types are implemented:
 To get a list of enrolled biometrics, call getAvailableBiometrics:
 
 ```dart
-List<BiometricType> availableBiometrics;
-    await auth.getAvailableBiometrics();
-
-if (Platform.isIOS) {
-    if (availableBiometrics.contains(BiometricType.face)) {
-        // Face ID.
-    } else if (availableBiometrics.contains(BiometricType.fingerprint)) {
-        // Touch ID.
-    }
+List<BiometricType> availableBiometrics = await LocalAuthentication.getAvailableBiometrics();
+if (availableBiometrics.contains(BiometricType.face)) {
+  // Face ID.
+} else if (availableBiometrics.contains(BiometricType.fingerprint)) {
+  // Touch ID.
 }
 ```
 
@@ -60,10 +55,10 @@ instructions will pop up to let the user set up fingerprint. If the user clicks
 Use the exported APIs to trigger local authentication with default dialogs:
 
 ```dart
-var localAuth = LocalAuthentication();
 bool didAuthenticate =
-    await localAuth.authenticateWithBiometrics(
-        localizedReason: 'Please authenticate to show account balance');
+  await LocalAuthentication.authenticateWithBiometrics(
+    localizedReason: 'Please authenticate to show account balance',
+  );
 ```
 
 If you don't want to use the default dialogs, call this API with
@@ -72,9 +67,10 @@ and you need to handle them in your dart code:
 
 ```dart
 bool didAuthenticate =
-    await localAuth.authenticateWithBiometrics(
-        localizedReason: 'Please authenticate to show account balance',
-        useErrorDialogs: false);
+  await LocalAuthentication.authenticateWithBiometrics(
+    localizedReason: 'Please authenticate to show account balance',
+    useErrorDialogs: false,
+  );
 ```
 
 You can use our default dialog messages, or you can use your own messages by
@@ -84,14 +80,16 @@ passing in IOSAuthMessages and AndroidAuthMessages:
 import 'package:local_auth/auth_strings.dart';
 
 const iosStrings = const IOSAuthMessages(
-    cancelButton: 'cancel',
-    goToSettingsButton: 'settings',
-    goToSettingsDescription: 'Please set up your Touch ID.',
-    lockOut: 'Please reenable your Touch ID');
-await localAuth.authenticateWithBiometrics(
-    localizedReason: 'Please authenticate to show account balance',
-    useErrorDialogs: false,
-    iOSAuthStrings: iosStrings);
+  cancelButton: 'cancel',
+  goToSettingsButton: 'settings',
+  goToSettingsDescription: 'Please set up your Touch ID.',
+  lockOut: 'Please reenable your Touch ID',
+);
+await LocalAuthentication.authenticateWithBiometrics(
+  localizedReason: 'Please authenticate to show account balance',
+  iOSAuthStrings: iosStrings,
+  useErrorDialogs: false,
+);
 
 ```
 
@@ -99,7 +97,7 @@ If needed, you can manually stop authentication for Android:
 
 ```dart
 void _cancelAuthentication() {
-    localAuth.stopAuthentication();
+    LocalAuthentication.stopAuthentication();
 }
 ```
 
@@ -114,8 +112,9 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 
 try {
-  bool didAuthenticate = await local_auth.authenticateWithBiometrics(
-      localizedReason: 'Please authenticate to show account balance');
+  bool didAuthenticate = await LocalAuthentication.authenticate(
+    localizedReason: 'Please authenticate to show account balance',
+  );
 } on PlatformException catch (e) {
   if (e.code == auth_error.notAvailable) {
     // Handle this exception here.

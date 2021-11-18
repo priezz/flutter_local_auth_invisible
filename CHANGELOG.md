@@ -1,13 +1,19 @@
 # Changelog
 
+## 2.2.0
+
+- Updated example;
+- **Breaking change**. All `LocalAuthentication` methods are now static.
+
 ## 2.1.0
 
-- Update minimum Flutter SDK to 2.5 and iOS deployment target to 9.0;
+- Updated minimum Flutter SDK to 2.5 and iOS deployment target to 9.0;
 - Switched to Android V2 embedding;
 - Updated Android lint settings;
-- Migrate maven repository from jcenter to mavenCentral;
-- Merge the upstream iOS code (1.1.8);
-- Update dependencies to latest stable versions;
+- Migrated maven repository from jcenter to mavenCentral;
+- Merged the upstream iOS code (1.1.8);
+- Updated dependencies to latest stable versions;
+- `authenticateWithBiometrics` method is deprecated in favor of `authenticate`;
 - **Breaking change**. `maxTimeoutMillis` parameter is removed.
 
 ## 2.0.0
