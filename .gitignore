@@ -38,3 +38,4 @@ local_auth
 
 flutter_export_environment.sh
 GeneratedPluginRegistrant.*
+example/build
