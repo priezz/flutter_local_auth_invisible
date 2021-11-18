@@ -1,25 +1,35 @@
 # Changelog
 
+## 2.1.0
+
+- Update minimum Flutter SDK to 2.5 and iOS deployment target to 9.0;
+- Switched to Android V2 embedding;
+- Updated Android lint settings;
+- Migrate maven repository from jcenter to mavenCentral;
+- Merge the upstream iOS code (1.1.8);
+- Update dependencies to latest stable versions;
+- **Breaking change**. `maxTimeoutMillis` parameter is removed.
+
 ## 2.0.0
 
-- Migrated to null-safety
-- Fixed a bug which caused the following error: "Attempted to finish an input event but the input event receiver has already been disposed."
+- Migrated to null-safety;
+- Fixed a bug which caused the following error: "Attempted to finish an input event but the input event receiver has already been disposed.".
 
 ## 1.1.0
 
-- Support Flutter 1.22.4+
+- Support Flutter 1.22.4+.
 
 ## 1.0.0
 
-- Merge the upstream iOS code (0.6.3)
+- Merge the upstream iOS code (0.6.3).
 
 ## 0.4.1+1
 
-- Updated README
+- Updated README.
 
 ## 0.4.1
 
-- Added `stopAuthentication` method for Android platform
+- Added `stopAuthentication` method for Android platform.
 
 ## 0.4.0+3
 

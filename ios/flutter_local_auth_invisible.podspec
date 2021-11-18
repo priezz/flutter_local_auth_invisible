@@ -9,14 +9,15 @@ Pod::Spec.new do |s|
 This Flutter plugin provides means to perform local, on-device authentication of the user.
 Downloaded by pub (not CocoaPods).
                        DESC
-  s.homepage         = 'https://github.com/flutter/plugins'
+  s.homepage         = 'https://github.com/priezz/flutter_local_auth_invisible'
   s.license          = { :type => 'BSD', :file => '../LICENSE' }
   s.author           = { 'Flutter Dev Team' => 'flutter-dev@googlegroups.com' }
-  s.source           = { :http => 'https://github.com/flutter/plugins/tree/master/packages/local_auth' }
+  s.source           = { :http => 'https://github.com/priezz/flutter_local_auth_invisible' }
   s.documentation_url = 'https://pub.dev/packages/flutter_local_auth_invisible'
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.platform = :ios, '8.0'
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
+  s.platform = :ios, '9.0'
+  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 end
+

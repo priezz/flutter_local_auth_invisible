@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,12 +27,22 @@ import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.core.os.CancellationSignal;
 import io.flutter.plugin.common.MethodCall;
 
+// import androidx.annotation.NonNull;
+// import androidx.biometric.BiometricPrompt;
+// import androidx.fragment.app.FragmentActivity;
+// import androidx.lifecycle.DefaultLifecycleObserver;
+// import androidx.lifecycle.Lifecycle;
+// import androidx.lifecycle.LifecycleOwner;
+// import java.util.concurrent.Executor;
+
 /**
- * Authenticates the user with fingerprint and sends corresponding response back to Flutter.
+ * Authenticates the user with fingerprint and sends corresponding response back
+ * to Flutter.
  *
- * <p>One instance per call is generated to ensure readable separation of executable paths across
- * method calls.
+ * One instance per call is generated to ensure readable separation of
+ * executable paths across method calls.
  */
+@SuppressWarnings("deprecation")
 class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallback
     implements Application.ActivityLifecycleCallbacks {
 
@@ -43,8 +53,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
 
   /** Captures the state of the fingerprint dialog. */
   private enum DialogState {
-    SUCCESS,
-    FAILURE
+    SUCCESS, FAILURE
   }
 
   /** The callback that handles the result of this authentication process. */
@@ -54,16 +63,16 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     void onSuccess();
 
     /**
-     * Called when authentication failed due to user. For instance, when user cancels the auth or
-     * quits the app.
+     * Called when authentication failed due to user. For instance, when user
+     * cancels the auth or quits the app.
      */
     void onFailure();
 
     /**
-     * Called when authentication fails due to non-user related problems such as system errors,
-     * phone not having a FP reader etc.
+     * Called when authentication fails due to non-user related problems such as
+     * system errors, phone not having a FP reader etc.
      *
-     * @param code The error code to be returned to Flutter app.
+     * @param code  The error code to be returned to Flutter app.
      * @param error The description of the error.
      */
     void onError(String code, String error);
@@ -76,14 +85,13 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   private final MethodCall call;
 
   /**
-   * The prominent UI element during this transaction. It is used to communicate the state of
-   * authentication to the user.
+   * The prominent UI element during this transaction. It is used to communicate
+   * the state of authentication to the user.
    */
 
   private CancellationSignal cancellationSignal;
 
-  AuthenticationHelper(
-      Activity activity, MethodCall call, AuthCompletionHandler completionHandler) {
+  AuthenticationHelper(Activity activity, MethodCall call, AuthCompletionHandler completionHandler) {
     this.activity = activity;
     this.completionHandler = completionHandler;
     this.call = call;
@@ -101,8 +109,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
         if (call.argument("useErrorDialogs")) {
           showGoToSettingsDialog();
         } else if (!keyguardManager.isKeyguardSecure()) {
-          completionHandler.onError(
-              "PasscodeNotSet",
+          completionHandler.onError("PasscodeNotSet",
               "Phone not secured by PIN, pattern or password, or SIM is currently locked.");
         } else {
           completionHandler.onError("NotEnrolled", "No fingerprint enrolled on this device.");
@@ -124,7 +131,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   }
 
   private void logDebug(Object value) {
-    Log.d("AuthenticationHelper", value.toString());
+    Log.d("LocalAuth", value.toString());
   }
 
   private void resume() {
@@ -144,7 +151,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
    * @param success If the authentication was successful.
    */
   private void stop(boolean success) {
-    logDebug("LOCAL AUTH STOPPED WITH A FLAG OF " + success);
+    logDebug("Stopped with the value: " + success);
     pause();
     activity.getApplication().unregisterActivityLifecycleCallbacks(this);
     if (success) {
@@ -155,8 +162,9 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   }
 
   /**
-   * If the activity is paused or stopped, we have to stop listening for fingerprint. Otherwise,
-   * user can still interact with fp reader in the background.. Sigh..
+   * If the activity is paused or stopped, we have to stop listening for
+   * fingerprint. Otherwise, user can still interact with fp reader in the
+   * background.. Sigh..
    */
   @Override
   public void onActivityPaused(Activity activity) {
@@ -174,6 +182,7 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     }
   }
 
+  @SuppressLint("SwitchIntDef")
   @Override
   public void onAuthenticationError(int errMsgId, CharSequence errString) {
     stopAuthentication();
@@ -192,18 +201,16 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
   @Override
   public void onAuthenticationSucceeded(FingerprintManagerCompat.AuthenticationResult result) {
     stop(true);
-    new Handler(Looper.myLooper())
-        .postDelayed(
-            new Runnable() {
-              @Override
-              public void run() {
-                stop(true);
-              }
-            },
-            DISMISS_AFTER_MS);
+    new Handler(Looper.myLooper()).postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        stop(true);
+      }
+    }, DISMISS_AFTER_MS);
   }
 
-  // Suppress inflateParams lint because dialogs do not need to attach to a parent view.
+  // Suppress inflateParams lint because dialogs do not need to attach to a parent
+  // view.
   @SuppressLint("InflateParams")
   private void showGoToSettingsDialog() {
     View view = LayoutInflater.from(activity).inflate(R.layout.go_to_setting, null, false);
@@ -212,42 +219,41 @@ class AuthenticationHelper extends FingerprintManagerCompat.AuthenticationCallba
     message.setText((String) call.argument("fingerprintRequired"));
     description.setText((String) call.argument("goToSettingDescription"));
     Context context = new ContextThemeWrapper(activity, R.style.AlertDialogCustom);
-    OnClickListener goToSettingHandler =
-        new OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            stop(false);
-            activity.startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS));
-          }
-        };
-    OnClickListener cancelHandler =
-        new OnClickListener() {
-          @Override
-          public void onClick(DialogInterface dialog, int which) {
-            stop(false);
-          }
-        };
-    new AlertDialog.Builder(context)
-        .setView(view)
+    OnClickListener goToSettingHandler = new OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        stop(false);
+        activity.startActivity(new Intent(Settings.ACTION_SECURITY_SETTINGS));
+      }
+    };
+    OnClickListener cancelHandler = new OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        stop(false);
+      }
+    };
+    new AlertDialog.Builder(context).setView(view)
         .setPositiveButton((String) call.argument("goToSetting"), goToSettingHandler)
-        .setNegativeButton((String) call.argument(CANCEL_BUTTON), cancelHandler)
-        .setCancelable(false)
-        .show();
+        .setNegativeButton((String) call.argument(CANCEL_BUTTON), cancelHandler).setCancelable(false).show();
   }
 
   // Unused methods for activity lifecycle.
 
   @Override
-  public void onActivityCreated(Activity activity, Bundle bundle) {}
+  public void onActivityCreated(Activity activity, Bundle bundle) {
+  }
 
   @Override
-  public void onActivityStarted(Activity activity) {}
+  public void onActivityStarted(Activity activity) {
+  }
 
   @Override
-  public void onActivityStopped(Activity activity) {}
+  public void onActivityStopped(Activity activity) {
+  }
 
   @Override
-  public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {}
+  public void onActivitySaveInstanceState(Activity activity, Bundle bundle) {
+  }
 
   @Override
   public void onActivityDestroyed(Activity activity) {
