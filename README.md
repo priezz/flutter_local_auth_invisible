@@ -101,6 +101,8 @@ void _cancelAuthentication() {
 }
 ```
 
+Look [here](tree/master/example) for the complete example.
+
 ### Exceptions
 
 There are 4 types of exceptions: PasscodeNotSet, NotEnrolled, NotAvailable and
@@ -137,6 +139,47 @@ app has not been updated to use TouchID.
 
 
 ## Android Integration
+
+Note that local_auth plugin requires the use of a FragmentActivity as
+opposed to Activity. This can be easily done by switching to use
+`FlutterFragmentActivity` as opposed to `FlutterActivity` in your
+manifest (or your own Activity class if you are extending the base class).
+
+Update your MainActivity.java:
+
+```java
+import android.os.Bundle;
+import io.flutter.app.FlutterFragmentActivity;
+import io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin;
+import io.flutter.plugins.localauth.LocalAuthPlugin;
+
+public class MainActivity extends FlutterFragmentActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        FlutterAndroidLifecyclePlugin.registerWith(
+                registrarFor(
+                        "io.flutter.plugins.flutter_plugin_android_lifecycle.FlutterAndroidLifecyclePlugin"));
+        LocalAuthPlugin.registerWith(registrarFor("io.flutter.plugins.localauth.LocalAuthPlugin"));
+    }
+}
+```
+
+OR
+
+Update your MainActivity.kt:
+
+```kotlin
+import io.flutter.embedding.android.FlutterFragmentActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugins.GeneratedPluginRegistrant
+
+class MainActivity: FlutterFragmentActivity() {
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        GeneratedPluginRegistrant.registerWith(flutterEngine)
+    }
+}
+```
 
 Update your project's `AndroidManifest.xml` file to include the
 `USE_FINGERPRINT` permissions:
