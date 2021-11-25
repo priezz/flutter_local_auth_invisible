@@ -101,7 +101,7 @@ void _cancelAuthentication() {
 }
 ```
 
-Look [here](tree/master/example) for the complete example.
+Look [here](https://github.com/priezz/flutter_local_auth_invisible/example) for the complete example.
 
 ### Exceptions
 
