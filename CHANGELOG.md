@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.1
+
+-  Upgrade intl packager version from intl: ^0.17.0 -> intl: ^0.18.0
+
 ## 2.2.0
 
 - Updated example;
